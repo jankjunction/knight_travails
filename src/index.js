@@ -64,7 +64,58 @@ returnSquare = (board, a, b) => {
   }
 };
 
+traverse = (start, end) => {
+  visited = [];
+  shortest = 9999999999999;
+  shortestRoute = [];
+
+  traverseRec = (start, end, path = []) => {
+    if (start === end) {
+      visited.push(start);
+      if (visited.length < shortest) {
+        shortest = visited.length;
+        shortestRoute = visited;
+        visited = [];
+        return;
+      } else {
+        visited = [];
+        return;
+      }
+    }
+    start.possibleMoves.forEach((possible) => {
+      if (possible === end) {
+        visited.push(start);
+        console.log(visited);
+        if (visited.length < shortest) {
+          shortest = visited.length;
+          shortestRoute = visited;
+          visited = [];
+          return;
+        }
+      }
+    });
+    if (!visited.includes(start)) {
+      visited.push(start);
+      start.possibleMoves.forEach((e) => {
+        traverseRec(e, end);
+      });
+    }
+  };
+  traverseRec(start, end);
+  console.log(shortestRoute);
+  console.log(
+    `The shortest route from [${start.x},${start.y}] to [${end.x},${end.y}] was ${shortestRoute.length}:`
+  );
+  shortestRoute.push(end);
+  for (let i = 0; i < shortestRoute.length; i += 1) {
+    console.log(`${shortestRoute[i].x} , ${shortestRoute[i].y}`);
+  }
+};
+
 let chessBoard = new gameBoard(8);
 chessBoard.buildBoard();
 chessBoard.buildMoves();
-console.log(chessBoard.board);
+
+console.log(
+  traverse(returnSquare(chessBoard, 0, 0), returnSquare(chessBoard, 7, 7))
+);
