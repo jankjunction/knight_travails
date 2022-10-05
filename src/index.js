@@ -1,8 +1,12 @@
+import Queue from './queue';
+
 class gameSquare {
   constructor(x, y) {
     this.x = x;
     this.y = y;
     this.possibleMoves = [];
+    this.visited = new Boolean();
+    this.previous = null;
   }
 
   genPossibleMoves(x = this.x, y = this.y) {
@@ -55,67 +59,73 @@ class gameBoard {
   }
 }
 
-returnSquare = (board, a, b) => {
+function returnSquare(board, a, b) {
   let boardsize = board.sidesquares * board.sidesquares;
   for (let i = 0; i < boardsize; i += 1) {
     if (board.board[i].x === a && board.board[i].y === b) {
       return board.board[i];
     }
   }
+}
+
+const traverse = (start, end) => {
+  let path = new Queue();
+  path.enqueue(start);
+  path.array[0].visited = true;
+
+  const shortestRoute = (result) => {
+    let route = [];
+    while (result.previous !== null) {
+      route.push(result.previous);
+      result = result.previous;
+    }
+    route.reverse();
+    route.push(end);
+    return route;
+  };
+
+  while (path.array.length !== 0) {
+    for (let i = 0; i < path.array[0].possibleMoves.length; i += 1) {
+      if (path.array[0] === end) {
+        return shortestRoute(path.array[0]);
+      }
+      if (path.array[0].possibleMoves[i].visited !== true) {
+        path.enqueue(path.array.concat()[0].possibleMoves[i]);
+        if (path.array[0].possibleMoves[i] === start) {
+        } else {
+          path.array[0].possibleMoves[i].previous = path.array.concat()[0];
+        }
+        path.array[0].possibleMoves[i].visited = true;
+      }
+    }
+    path.dequeue();
+  }
 };
 
-traverse = (start, end) => {
-  visited = [];
-  shortest = 9999999999999;
-  shortestRoute = [];
-
-  traverseRec = (start, end, path = []) => {
-    if (start === end) {
-      visited.push(start);
-      if (visited.length < shortest) {
-        shortest = visited.length;
-        shortestRoute = visited;
-        visited = [];
-        return;
-      } else {
-        visited = [];
-        return;
-      }
-    }
-    start.possibleMoves.forEach((possible) => {
-      if (possible === end) {
-        visited.push(start);
-        console.log(visited);
-        if (visited.length < shortest) {
-          shortest = visited.length;
-          shortestRoute = visited;
-          visited = [];
-          return;
-        }
-      }
-    });
-    if (!visited.includes(start)) {
-      visited.push(start);
-      start.possibleMoves.forEach((e) => {
-        traverseRec(e, end);
-      });
-    }
-  };
-  traverseRec(start, end);
-  console.log(shortestRoute);
-  console.log(
-    `The shortest route from [${start.x},${start.y}] to [${end.x},${end.y}] was ${shortestRoute.length}:`
+const knightMoves = (start, end) => {
+  let route = traverse(
+    returnSquare(chessBoard, start[0], start[1]),
+    returnSquare(chessBoard, end[0], end[1])
   );
-  shortestRoute.push(end);
-  for (let i = 0; i < shortestRoute.length; i += 1) {
-    console.log(`${shortestRoute[i].x} , ${shortestRoute[i].y}`);
+
+  boardReset(chessBoard);
+  console.log(`You made it in ${route.length - 1} moves!  Here's your path:`);
+  for (let i = 0; i < route.length; i += 1) {
+    console.log(`${route[i].x},${route[i].y}`);
   }
+  return route;
+};
+
+const boardReset = (board) => {
+  board.board = [];
+  board.buildBoard();
+  board.buildMoves();
 };
 
 let chessBoard = new gameBoard(8);
 chessBoard.buildBoard();
 chessBoard.buildMoves();
 
-console.log(
-  traverse(returnSquare(chessBoard, 0, 0), returnSquare(chessBoard, 7, 7))
-);
+console.log(knightMoves([0, 0], [4, 2]));
+console.log(knightMoves([0, 0], [2, 1]));
+console.log(knightMoves([7, 7], [6, 3]));
